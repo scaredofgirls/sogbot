@@ -1,0 +1,4 @@
+nextcord[voice]
+PyYAML
+requests
+mcrcon

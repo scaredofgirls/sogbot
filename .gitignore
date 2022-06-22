@@ -1,0 +1,6 @@
+config.yaml
+__pycache__
+discord.log
+.bnet_auth
+bot_virtual_env
+disc_bot.db

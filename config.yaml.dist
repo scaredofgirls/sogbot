@@ -1,0 +1,30 @@
+bot:
+  owner_ids:
+    - 999999999999999999
+  guild_ids:
+    - 999999999999999999
+
+storage:
+  shelve:
+    db_path: "disc_bot.db"
+
+discord:
+  bot_token: blahblah.eat.pizza
+  bot_guild: 000000000000000000
+
+bnet:
+  client_id: 6ea7f264d0f65ba49308fa3e2d72289b
+  client_secret: d756dfbf3525f0bcfeb1ecd67d1db8e66d3cb2c5
+  uri_base: https://us.api.blizzard.com/data/wow
+
+imgur:
+  client_id: 6ea7f264d0f65ba49308fa3e2d72289b
+  client_secret: d756dfbf3525f0bcfeb1ecd67d1db8e66d3cb2c5
+  api:
+    base: https://api.imgur.com/3
+    subs: account/{0}/submissions/0/newest
+
+mc:
+  rcon:
+    host: 1.1.1.1
+    pass: supersecurepassword
