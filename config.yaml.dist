@@ -10,7 +10,6 @@ storage:
 
 discord:
   bot_token: blahblah.eat.pizza
-  bot_guild: 000000000000000000
 
 bnet:
   client_id: 6ea7f264d0f65ba49308fa3e2d72289b
