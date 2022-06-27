@@ -34,7 +34,7 @@ st = storage.init_storage(config=bot_config)
 DISCORD_TOKEN = bot_config['discord']['bot_token']
 
 if __name__ == '__main__':
-    bot_log.info("Sogbot starting up")
+    bot_log.info("Starting up")
     bot = commands.Bot(command_prefix='!', intents=bot_intents)
     bot.config = bot_config
     bot.storage = st
@@ -47,13 +47,13 @@ if __name__ == '__main__':
             bot.owner_id = bot_config['bot']['owner_ids'][0]
             bot_log.debug(f"Set owner_id to {bot.owner_id}")
     except KeyError:
-        bot_log.error("Bot owner not defined.")
-        bot_log.error("Falling back on default owner detection.")
+        bot_log.warning("Bot owner not defined.")
+        bot_log.warning("Falling back on default owner detection.")
 
     @bot.event
     async def on_ready():
-        bot_log.info("Sogbot ready")
-        bot_log.debug(f"{bot.user.name} connected to {bot.guilds} ")
+        bot_log.info("Bot ready")
+        bot_log.debug(f"{bot.user.name} connected to {bot.guilds}")
 
     @bot.command()
     async def eatpizza(ctx):
