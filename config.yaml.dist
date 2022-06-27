@@ -27,3 +27,7 @@ mc:
   rcon:
     host: 1.1.1.1
     pass: supersecurepassword
+
+mud:
+  host: islandsofmyth.org
+  cgi_uri: 3k/cgi

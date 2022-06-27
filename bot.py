@@ -62,7 +62,7 @@ if __name__ == '__main__':
     extensions = [
         # 'BNet.server_watcher'
         'admin.admin', 'imgur.user_watcher', 'mc.mcrcon',
-        'rand.rand'
+        'rand.rand', 'iom.iom'
     ]
     for extension in extensions:
         try:

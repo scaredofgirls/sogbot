@@ -25,7 +25,7 @@ class imgurAPI(commands.Cog):
                          bot.config['imgur']['api']['base'],
                          bot.config['imgur']['api']['subs'])
         for gid in bot.config['bot']['guild_ids']:
-            self.mc.add_guild_rollout(gid)
+            self.imgur.add_guild_rollout(gid)
         self._load_users()  # Loads from storage into self.watched_users
         self._start_watching()
 

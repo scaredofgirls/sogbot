@@ -14,7 +14,7 @@ class rand(commands.Cog):
         self.app = "rand"
         self.bot = bot
         for gid in bot.config['bot']['guild_ids']:
-            self.mc.add_guild_rollout(gid)
+            self.rand.add_guild_rollout(gid)
 
     @nextcord.slash_command(name="rand", description="Generate random numbers")
     async def rand(self, interaction: Interaction,
