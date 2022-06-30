@@ -24,6 +24,9 @@ imgur:
     subs: account/{0}/submissions/0/newest
 
 mc:
+  info:
+    server: example.net
+    modpack: "[Name of a modpack](https://curseforge.com/awesome_mod_pack)"
   rcon:
     host: 1.1.1.1
     pass: supersecurepassword

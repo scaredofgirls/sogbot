@@ -26,6 +26,14 @@ class mcrcon(commands.Cog):
     async def mc(self, name="mc"):
         pass
 
+    @mc.subcommand(name="info",
+                   description="Show the modpack and server currently in use")
+    async def info(self, interaction: nextcord.Interaction):
+        server = self.bot.config['mc']['info']['server']
+        modpack = self.bot.config['mc']['info']['modpack']
+        msg = f"Now running {modpack} on {server}"
+        await interaction.response.send_message(msg)
+
     @mc.subcommand(name="say",
                    description="Send a message to Minecraft chat!")
     async def say(self, interaction: nextcord.Interaction,
