@@ -30,10 +30,10 @@ class rand(commands.Cog):
             if this_int not in results:
                 results.append(this_int)
         results.sort()
-        await interaction.response.send_message(', '.join(
-            [str(r) for r in results]
-          )
-        )
+        message = ', '.join([str(r) for r in results])
+        summed = sum(results)
+        message = f"{message}\nThe sum of which is: {summed}"
+        await interaction.response.send_message(message)
 
 
 def setup(bot):
