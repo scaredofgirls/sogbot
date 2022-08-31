@@ -33,15 +33,31 @@ class iom(commands.Cog):
         resp = self._do_mud_command("who")
         await interaction.response.send_message(resp)
 
-    def _do_mud_command(self, command):
+    @iom.subcommand(name="finger",
+                    description="Finger a player.")
+    async def finger(self, interaction: nextcord.Interaction, player: str):
+        resp = self._do_mud_command("finger", player)
+        await interaction.response.send_message(resp)
+
+    def _do_mud_command(self, command, args=None):
         if command == "who":
             resp = self._get_who_cgi()
+        if command == "finger":
+            resp = self._get_finger_cgi(args)
         return resp
 
-    def _do_cgi_req(self, uri):
+    def _do_cgi_req(self, uri, args=None):
         url = f"http://{self.mud['host']}/{self.mud['cgi_uri']}/{uri}"
+        if args is not None:
+            url = f"{url}?{args}"
         r = requests.get(url)
         return r.text
+
+    def _get_finger_cgi(self, player):
+        q_args = f"name={player}&format=flat"
+        finger_info = ">>> "
+        finger_info += self._do_cgi_req("korth.c", q_args)
+        return finger_info
 
     def _get_who_cgi(self):
         users_on = ">>> "
