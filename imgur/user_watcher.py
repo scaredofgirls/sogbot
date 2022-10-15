@@ -140,7 +140,9 @@ class imgurAPI(commands.Cog):
             response = f"{response}{submission_info['link']}"
             self.watched_users[user]['newest_ts'] = submission_info['datetime']
             self._update_storage()
-
+        else:
+            response = f"Received error while fetching info for '{user}'."
+            response = f"{response}\n```{submission_info}```"
         return response
 
     def _update_storage(self):
@@ -156,12 +158,13 @@ class imgurAPI(commands.Cog):
         res = requests.get(this_url, headers=self.http_headers)
         j = res.json()
         logger.debug(f"got json {j}")
+        logger.debug(f"got headers: {res.headers}")
         if j['success']:
             logger.debug("success evaluates True, returning json['data'][0]")
             return j['data'][0]
         else:
             logger.debug("returning False")
-            return False
+            return j
 
     def _update_user(self, user, notify_channel):
         if notify_channel not in self.watched_users[user]["notify_channels"]:
