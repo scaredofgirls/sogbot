@@ -129,7 +129,7 @@ class imgurAPI(commands.Cog):
             return response
 
         submission_info = self._get_new_user_submission(user)
-        if (submission_info
+        if ('success' not in submission_info
                 and submission_info['datetime']
                 > self.watched_users[user]['newest_ts']):
             time_st = time.localtime(submission_info['datetime'])
