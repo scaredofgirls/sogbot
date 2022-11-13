@@ -2,3 +2,4 @@ nextcord[voice]
 PyYAML
 requests
 mcrcon
+bs4
