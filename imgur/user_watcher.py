@@ -94,6 +94,8 @@ class imgurAPI(commands.Cog):
                 chan_id = int(nc.split(":")[1])
                 channel = self.bot.get_channel(chan_id)
                 await channel.send(response)
+            logger.debug("Resting, for the imgur API is a fragile thing.")
+            time.sleep(10)
 
     @watcher.before_loop
     async def before_watcher(self):
