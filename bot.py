@@ -29,7 +29,7 @@ bot_intents = nextcord.Intents.default()
 bot_intents.message_content = True
 
 bot_config = botutil.get_config()
-bot_log.setLevel(logging.config['bot']['log_level'])
+bot_log.setLevel(bot_config['bot']['log_level'])
 st = storage.init_storage(config=bot_config)
 
 DISCORD_TOKEN = bot_config['discord']['bot_token']
