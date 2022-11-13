@@ -51,6 +51,13 @@ class Admin(commands.Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
+    @commands.command(name='speak', hidden=True)
+    @commands.is_owner()
+    async def speak(self, ctx, cid: int, words: str):
+        """Says words in a chat"""
+        chan = self.bot.get_channel(cid)
+        await chan.send(words)
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
