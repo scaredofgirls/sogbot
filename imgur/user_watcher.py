@@ -5,6 +5,7 @@ import nextcord
 import requests
 import logging
 import time
+import datetime
 
 # users should be:
 """
@@ -46,9 +47,28 @@ class imgurAPI(commands.Cog):
                       description="""Shows the config for the imgur
                       functionality of this bot""")
     async def status(self, interaction: nextcord.Interaction):
-        resp = f"Watcher running: {self.watcher.is_running()}"
-        resp = f"{resp}\nWatching users: ```{self.watched_users}```"
-        await interaction.response.send_message(resp)
+        resp = "Watching the following users:"
+        this_embed = nextcord.Embed(colour=0x00FFFF,
+                                    description=resp,
+                                    title="User Watcher Status", type="rich",
+                                    timestamp=datetime.datetime.now())
+        for usr in self.watched_users:
+            last_up = datetime.datetime.fromtimestamp(
+                self.watched_users[usr]['newest_ts']
+            )
+            last_up = last_up.strftime('%c')
+            details = f"Last Update: {last_up}\n"
+            details = f"{details} Notifying Channels:"
+            for nch in self.watched_users[usr]['notify_channels']:
+                g, c = nch.split(':')
+                this_guild = self.bot.get_guild(int(g))
+                gname = this_guild.name
+                chan = this_guild.get_channel(int(c)).name
+                details = f"{details} {gname}: #{chan}"
+            this_embed.add_field(name=usr, value=details)
+        this_embed.add_field(name="Watcher running",
+                             value=f"{self.watcher.is_running()}")
+        await interaction.response.send_message(embed=this_embed)
 
     @imgur.subcommand(name='watch_user',
                       description="""Periodically query imgur for new posts
@@ -87,13 +107,25 @@ class imgurAPI(commands.Cog):
     async def watcher(self):
         logger.debug("in watcher task")
         for user in self.watched_users:
-            response = self._check_submissions(user)
+            try:
+                response = self._check_submissions(user)
+            except nextcord.errors.HTTPException as e:
+                logger.error("Exception in watcher calling _check_submissions")
+                logger.error("%s", e)
+                return
             if response is None:
                 return
             for nc in self.watched_users[user]["notify_channels"]:
                 chan_id = int(nc.split(":")[1])
                 channel = self.bot.get_channel(chan_id)
-                await channel.send(response)
+                try:
+                    if len(response) >= 2000:
+                        response = response[:1998]
+                    await channel.send(response)
+                except nextcord.errors.HTTPException as e:
+                    logger.error("Exception in watcher sending reslt output")
+                    logger.error("%s", e)
+                    return
             logger.debug("Resting, for the imgur API is a fragile thing.")
             time.sleep(10)
 
@@ -131,17 +163,24 @@ class imgurAPI(commands.Cog):
             return response
 
         submission_info = self._get_new_user_submission(user)
-        if ('success' not in submission_info
-                and submission_info['datetime']
-                > self.watched_users[user]['newest_ts']):
-            time_st = time.localtime(submission_info['datetime'])
-            sub_date = time.strftime("%H:%M:%S %Z on %A, %B %d %Y", time_st)
-            logger.debug(f"New post from {user} found!")
-            response = f"New post from {user} found!\n"
-            response = f"{response}The post was made at {sub_date}\n"
-            response = f"{response}{submission_info['link']}"
-            self.watched_users[user]['newest_ts'] = submission_info['datetime']
-            self._update_storage()
+        # If the success key is present, _get_new_user_submission returned
+        # the whole response object and not just the most recent post. This
+        # indicates an error
+        if 'success' not in submission_info:
+            if (submission_info['datetime'] >
+                    self.watched_users[user]['newest_ts']):
+                st = time.localtime(submission_info['datetime'])
+                sub_date = time.strftime("%H:%M:%S %Z on %A, %B %d %Y", st)
+                logger.debug(f"New post from {user} found!")
+                response = f"New post from {user} found!\n"
+                response = f"{response}The post was made at {sub_date}\n"
+                response = f"{response}{submission_info['link']}"
+                self.watched_users[user]['newest_ts'] = (
+                    submission_info['datetime']
+                )
+                self._update_storage()
+            else:
+                logger.info(f"No new images found for {user}")
         else:
             response = f"Received error while fetching info for '{user}'."
             response = f"{response}\n```{submission_info}```"
@@ -165,7 +204,7 @@ class imgurAPI(commands.Cog):
             logger.debug("success evaluates True, returning json['data'][0]")
             return j['data'][0]
         else:
-            logger.debug("returning False")
+            logger.debug("success evalutes False, returning whole object")
             return j
 
     def _update_user(self, user, notify_channel):
