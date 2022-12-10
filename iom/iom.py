@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 from nextcord.ext import commands
-# from nextcord import SlashOption
 import nextcord
 import logging
 import requests
 from bs4 import BeautifulSoup
+import datetime
 
 logger = logging.getLogger('sogbot')
 cog_desc = "Commands for interaction with a Islands of Myth"
@@ -31,7 +31,16 @@ class iom(commands.Cog):
                     description="See who is playing!")
     async def who(self, interaction: nextcord.Interaction):
         resp = self._do_mud_command("who")
-        await interaction.response.send_message(resp)
+
+        this_embed = nextcord.Embed(colour=0x145DA0,
+                                    description="Players Currently Online:",
+                                    title="IoM 'who'", type="rich",
+                                    timestamp=datetime.datetime.now())
+        for player in resp:
+            this_value = f"Level {player[3]} {player[1].title()}"
+            this_value = f"{this_value} {player[2].title()}"
+            this_embed.add_field(name=player[0].title(), value=this_value)
+        await interaction.response.send_message(embed=this_embed)
 
     @iom.subcommand(name="finger",
                     description="Finger a player.")
@@ -60,12 +69,14 @@ class iom(commands.Cog):
         return finger_info
 
     def _get_who_cgi(self):
-        users_on = ">>> "
+        users_on = []
         who_html = self._do_cgi_req("who.c")
         soup = BeautifulSoup(who_html, 'html.parser')
         for user in soup.ol.find_all('li'):
-            this_user = ' '.join(user.get_text().split())
-            users_on = f"{users_on}{this_user}\n"
+            bits = user.get_text().split()
+
+            users_on.append((bits[0], bits[2].rstrip(','), bits[5],
+                             bits[8].rstrip('.')))
         return users_on
 
 
