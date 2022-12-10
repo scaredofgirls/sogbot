@@ -114,7 +114,10 @@ class imgurAPI(commands.Cog):
                 logger.error("%s", e)
                 return
             if response is None:
-                return
+                logger.debug("Got None from _check_submissions. ending iter")
+                logger.debug("Resting, for the imgur API is a fragile thing.")
+                time.sleep(10)
+                continue
             for nc in self.watched_users[user]["notify_channels"]:
                 chan_id = int(nc.split(":")[1])
                 channel = self.bot.get_channel(chan_id)
@@ -123,7 +126,7 @@ class imgurAPI(commands.Cog):
                         response = response[:1998]
                     await channel.send(response)
                 except nextcord.errors.HTTPException as e:
-                    logger.error("Exception in watcher sending reslt output")
+                    logger.error("Exception in watcher sending result to chan")
                     logger.error("%s", e)
                     return
             logger.debug("Resting, for the imgur API is a fragile thing.")
