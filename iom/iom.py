@@ -6,9 +6,14 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 import datetime
+import re
 
 logger = logging.getLogger('sogbot')
 cog_desc = "Commands for interaction with a Islands of Myth"
+
+WHO_RE = r'([A-Z][a-z]+) the ([A-Za-z_ -]+), is ranked +([A-Za-z_ -]+) at '
+WHO_RE = WHO_RE + r'level +([0-9]+)\.'
+WHO_RE = re.compile(WHO_RE)
 
 
 class iom(commands.Cog):
@@ -72,11 +77,16 @@ class iom(commands.Cog):
         users_on = []
         who_html = self._do_cgi_req("who.c")
         soup = BeautifulSoup(who_html, 'html.parser')
-        for user in soup.ol.find_all('li'):
-            bits = user.get_text().split()
 
-            users_on.append((bits[0], bits[2].rstrip(','), bits[5],
-                             bits[8].rstrip('.')))
+        for user in soup.ol.find_all('li'):
+            this_line = user.get_text()
+            who_match = WHO_RE.fullmatch(this_line)
+            if who_match is None:
+                logger.debug("No match found for the following line.")
+                logger.debug(this_line)
+                continue
+            users_on.append(who_match.groups())
+
         return users_on
 
 
