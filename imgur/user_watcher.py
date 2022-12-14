@@ -46,6 +46,7 @@ class imgurAPI(commands.Cog):
     @imgur.subcommand(name='status',
                       description="""Shows the config for the imgur
                       functionality of this bot""")
+    @commands.is_owner()
     async def status(self, interaction: nextcord.Interaction):
         resp = "Watching the following users:"
         this_embed = nextcord.Embed(colour=0x00FFFF,
