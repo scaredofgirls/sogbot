@@ -7,6 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 import datetime
 import re
+import json
 
 logger = logging.getLogger('sogbot')
 cog_desc = "Commands for interaction with a Islands of Myth"
@@ -53,11 +54,31 @@ class iom(commands.Cog):
         resp = self._do_mud_command("finger", player)
         await interaction.response.send_message(resp)
 
+    @iom.subcommand(name="parties",
+                    description="Show the currently formed parties")
+    async def parties(self, interaction: nextcord.Interaction):
+        resp = self._do_mud_command("parties")
+        resp = json.loads(resp)
+        this_embed = nextcord.Embed(colour=0x145DA0,
+                                    description="Parties Active:",
+                                    title="IoM 'all parties'", type="rich",
+                                    timestamp=datetime.datetime.now())
+        for party in resp:
+            # "{\"name\": \"%s\", \"leader\": \"%s\", \"rate\": %d,
+            # \"rating\":\"%s\", \"type\": \"%s\"}"
+            this_value = f"Leader: {party['leader']} "
+            this_value += f"XP/Minute: {party['rate']}"
+            this_label = f"{party['name']} [{party['rating']}]"
+            this_embed.add_field(name=this_label, value=this_value)
+        await interaction.response.send_message(embed=this_embed)
+
     def _do_mud_command(self, command, args=None):
         if command == "who":
             resp = self._get_who_cgi()
         if command == "finger":
             resp = self._get_finger_cgi(args)
+        if command == "parties":
+            resp = self._get_parties_cgi()
         return resp
 
     def _do_cgi_req(self, uri, args=None):
@@ -67,10 +88,14 @@ class iom(commands.Cog):
         r = requests.get(url)
         return r.text
 
+    def _get_parties_cgi(self):
+        parties = self._do_cgi_req("parties.c")
+        return parties
+
     def _get_finger_cgi(self, player):
         q_args = f"name={player}&format=flat"
         finger_info = ">>> "
-        finger_info += self._do_cgi_req("korth.c", q_args)
+        finger_info += self._do_cgi_req("finger.c", q_args)
         return finger_info
 
     def _get_who_cgi(self):
