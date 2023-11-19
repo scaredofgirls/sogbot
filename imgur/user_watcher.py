@@ -229,4 +229,7 @@ def setup(bot):
 
 
 def teardown(bot):
+    # We should call _stop_watching() here, it seems like the task might
+    # not be killed when we reload the cog. Can we access methods of the cog
+    # from the bot object, given we call add_cog()?
     pass
