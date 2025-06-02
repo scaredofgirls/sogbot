@@ -21,7 +21,7 @@ Have an idea for new functionality?
 Clone this repository.
 Create a new python virtual environment and activate it.
 
-    python3 -m venv ./bot_virtual_env
+    python3 -m venv ./.venv
     source bot_virtual_env/bin/activate
 
 Install the required dependencies.

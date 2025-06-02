@@ -2,5 +2,5 @@ config.yaml
 __pycache__
 discord.log
 .bnet_auth
-bot_virtual_env
+.venv
 disc_bot.db
