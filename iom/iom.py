@@ -1,23 +1,28 @@
-#!/usr/bin/env python3
+"""
+A nextcord extension for interacting with
+Islands of Myth MUD
+"""
 
-from nextcord.ext import commands
-import nextcord
 import logging
-import requests
-from bs4 import BeautifulSoup
 import datetime
 import re
 import json
+from bs4 import BeautifulSoup
+import requests
+from nextcord.ext import commands
+import nextcord
+import botutil
 
 logger = logging.getLogger('sogbot')
-cog_desc = "Commands for interaction with a Islands of Myth"
+COG_DESC = "Commands for interaction with a Islands of Myth"
 
-WHO_RE = r'([A-Z][a-z]+) the ([A-Za-z_ -]+), is ranked +([A-Za-z_ -]+) at '
-WHO_RE = WHO_RE + r'level +([0-9]+)\.'
-WHO_RE = re.compile(WHO_RE)
+who_re = r'([A-Z][a-z]+) the ([A-Za-z_ -]+), is ranked +([A-Za-z_ -]+) at '
+who_re = who_re + r'level +([0-9]+)\.'
+WHO_RE_PAT = re.compile(who_re)
 
 
-class iom(commands.Cog):
+class Iom(commands.Cog):
+    """A cog of commands for interacting with IoM"""
     def __init__(self, bot):
         self.app = "iom"
         self.bot = bot
@@ -25,17 +30,18 @@ class iom(commands.Cog):
             "host": bot.config['mud']['host'],
             "cgi_uri": bot.config['mud']['cgi_uri']
         }
-        for gid in bot.config['bot']['guild_ids']:
-            self.iom.add_guild_rollout(gid)
+        botutil.do_guild_rollout(bot.config, __name__, self.iom)
 
     @nextcord.slash_command(name="iom",
-                            description=cog_desc)
-    async def iom(self, name="iom"):
-        pass
+                            description=COG_DESC)
+    async def iom(self):
+        """A placeholder to get the base command created"""
+        return
 
     @iom.subcommand(name="who",
                     description="See who is playing!")
     async def who(self, interaction: nextcord.Interaction):
+        """See who is playing"""
         resp = self._do_mud_command("who")
 
         this_embed = nextcord.Embed(colour=0x145DA0,
@@ -51,12 +57,14 @@ class iom(commands.Cog):
     @iom.subcommand(name="finger",
                     description="Finger a player.")
     async def finger(self, interaction: nextcord.Interaction, player: str):
+        """Finger a player"""
         resp = self._do_mud_command("finger", player)
         await interaction.response.send_message(resp)
 
     @iom.subcommand(name="parties",
                     description="Show the currently formed parties")
     async def parties(self, interaction: nextcord.Interaction):
+        """List parties"""
         resp = self._do_mud_command("parties")
         resp = json.loads(resp)
         this_embed = nextcord.Embed(colour=0x145DA0,
@@ -73,6 +81,7 @@ class iom(commands.Cog):
         await interaction.response.send_message(embed=this_embed)
 
     def _do_mud_command(self, command, args=None):
+        resp = ""
         if command == "who":
             resp = self._get_who_cgi()
         if command == "finger":
@@ -85,7 +94,7 @@ class iom(commands.Cog):
         url = f"http://{self.mud['host']}/{self.mud['cgi_uri']}/{uri}"
         if args is not None:
             url = f"{url}?{args}"
-        r = requests.get(url)
+        r = requests.get(url, timeout=15)
         return r.text
 
     def _get_parties_cgi(self):
@@ -105,7 +114,7 @@ class iom(commands.Cog):
 
         for user in soup.ol.find_all('li'):
             this_line = user.get_text()
-            who_match = WHO_RE.fullmatch(this_line)
+            who_match = WHO_RE_PAT.fullmatch(this_line)
             if who_match is None:
                 logger.debug("No match found for the following line.")
                 logger.debug(this_line)
@@ -116,8 +125,10 @@ class iom(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(iom(bot))
+    """Called by nextcord when an extension is loaded"""
+    bot.add_cog(Iom(bot))
 
 
 def teardown(bot):
-    pass
+    """Called by nextcord when an extension is unloaded"""
+    return

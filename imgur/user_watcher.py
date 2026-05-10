@@ -1,38 +1,39 @@
-#!/usr/bin/env python3
+"""Checks imgur accounts for new posts and when it finds new posts it posts
+them to a channel"""
 
+import datetime
+import logging
+import time
 from nextcord.ext import commands, tasks
 import nextcord
 import requests
-import logging
-import time
-import datetime
+import botutil
 
 # users should be:
-"""
-{
-    "newest_ts" = 0,
-    "notify_channels": ["guild_id:channel_id", "guild_id:channel_id"]
-}
-"""
+# {
+#     "newest_ts" = 0,
+#     "notify_channels": ["guild_id:channel_id", "guild_id:channel_id"]
+# }
+
 logger = logging.getLogger('sogbot')
 
 
-class imgurAPI(commands.Cog):
+class ImgurAPI(commands.Cog):
+    """An imgur account watcher"""
     def __init__(self, bot):
         self.app = "imgurwatcher"
         self.bot = bot
         self._setup_http(bot.config['imgur']['client_id'],
-                         bot.config['imgur']['client_secret'],
                          bot.config['imgur']['api']['base'],
                          bot.config['imgur']['api']['subs'])
-        for gid in bot.config['bot']['guild_ids']:
-            self.imgur.add_guild_rollout(gid)
+        botutil.do_guild_rollout(bot.config, __name__, self.imgur)
         self._load_users()  # Loads from storage into self.watched_users
         self._start_watching()
 
     @nextcord.slash_command()
-    async def imgur(self, name="imgur"):
-        pass
+    async def imgur(self):
+        """A place holder to get the base command created"""
+        return
 
     @imgur.subcommand(name="stop",
                       description="""Stop checking imgur for posts from
@@ -48,6 +49,7 @@ class imgurAPI(commands.Cog):
                       functionality of this bot""")
     @commands.is_owner()
     async def status(self, interaction: nextcord.Interaction):
+        """Show the imgur config for this bot"""
         resp = "Watching the following users:"
         this_embed = nextcord.Embed(colour=0x00FFFF,
                                     description=resp,
@@ -57,8 +59,8 @@ class imgurAPI(commands.Cog):
             last_up = datetime.datetime.fromtimestamp(
                 self.watched_users[usr]['newest_ts']
             )
-            last_up = last_up.strftime('%c')
-            details = f"Last Update: {last_up}\n"
+            last_up_str = last_up.strftime('%c')
+            details = f"Last Update: {last_up_str}\n"
             details = f"{details} Notifying Channels:"
             for nch in self.watched_users[usr]['notify_channels']:
                 g, c = nch.split(':')
@@ -75,6 +77,7 @@ class imgurAPI(commands.Cog):
                       description="""Periodically query imgur for new posts
                       from a user""")
     async def watch_user(self, interaction: nextcord.Interaction, user: str):
+        """Start watching a user account"""
         notify_channel = f"{interaction.guild_id}:{interaction.channel_id}"
 
         if user in self.watched_users:
@@ -94,6 +97,7 @@ class imgurAPI(commands.Cog):
                       description="""Stops the querying of the imgur API for
                       new posts from the specified user""")
     async def unwatch_user(self, interaction: nextcord.Interaction, user: str):
+        """Stop watching a user account"""
         if user not in self.watched_users:
             resp = f"Not watching {user}"
             await interaction.response.send_message(resp)
@@ -106,6 +110,8 @@ class imgurAPI(commands.Cog):
 
     @tasks.loop(seconds=14400)
     async def watcher(self):
+        """Main loop to keep the checks for new imgur posts automated instead
+        of on-demand"""
         logger.debug("in watcher task")
         for user in self.watched_users:
             try:
@@ -135,7 +141,12 @@ class imgurAPI(commands.Cog):
 
     @watcher.before_loop
     async def before_watcher(self):
+        """Code that runs before the watcher starts"""
         await self.bot.wait_until_ready()
+
+    def stop_watching(self):
+        """Stop the watcher"""
+        self._stop_watching()
 
     # Start private methods
     def _start_watching(self):
@@ -151,19 +162,18 @@ class imgurAPI(commands.Cog):
         if self.watched_users is None:
             self.watched_users = {}
 
-    def _setup_http(self, client_id, client_secret,
-                    api_base, api_subs):
+    def _setup_http(self, client_id, api_base, api_subs):
         self.http_headers = {"Authorization": f"Client-ID {client_id}"}
         self.url_pattern = f"{api_base}/{api_subs}"
 
     def _check_submissions(self, user):
-        logger.debug(f"checking profile of {user} for new posts")
+        logger.debug("Checking profile of %s for new posts", user)
         response = None
 
         threshold = int(time.time()) - 43200  # 12 hours ago
         if self.watched_users[user]['newest_ts'] > threshold:
-            logger.debug(f"Newest post from {user} found recently.")
-            logger.debug(f"Not checking for new post from {user}.")
+            logger.debug("Newest post from %s found recently.", user)
+            logger.debug("Not checking for new post from %s", user)
             return response
 
         submission_info = self._get_new_user_submission(user)
@@ -175,7 +185,7 @@ class imgurAPI(commands.Cog):
                     self.watched_users[user]['newest_ts']):
                 st = time.localtime(submission_info['datetime'])
                 sub_date = time.strftime("%H:%M:%S %Z on %A, %B %d %Y", st)
-                logger.debug(f"New post from {user} found!")
+                logger.debug("New post from %s found!", user)
                 response = f"New post from {user} found!\n"
                 response = f"{response}The post was made at {sub_date}\n"
                 response = f"{response}{submission_info['link']}"
@@ -184,7 +194,7 @@ class imgurAPI(commands.Cog):
                 )
                 self._update_storage()
             else:
-                logger.info(f"No new images found for {user}")
+                logger.info("No new images found for %s", user)
         else:
             response = f"Received error while fetching info for '{user}'."
             response = f"{response}\n```{submission_info}```"
@@ -199,17 +209,18 @@ class imgurAPI(commands.Cog):
 
     def _get_new_user_submission(self, user):
         this_url = self.url_pattern.format(user)
-        logger.debug(f"in _get_new_user_submission with url {this_url}")
-        res = requests.get(this_url, headers=self.http_headers)
+        logger.debug("in _get_new_user_submission with url %s", this_url)
+        res = requests.get(this_url, headers=self.http_headers, timeout=30)
         j = res.json()
-        logger.debug(f"got json {j}")
-        logger.debug(f"got headers: {res.headers}")
+        logger.debug("got json %s", j)
+        logger.debug("got headers: %s", res.headers)
+
         if j['success']:
             logger.debug("success evaluates True, returning json['data'][0]")
             return j['data'][0]
-        else:
-            logger.debug("success evalutes False, returning whole object")
-            return j
+
+        logger.debug("success evalutes False, returning whole object")
+        return j
 
     def _update_user(self, user, notify_channel):
         if notify_channel not in self.watched_users[user]["notify_channels"]:
@@ -225,11 +236,10 @@ class imgurAPI(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(imgurAPI(bot))
+    """Called by nextcord when an extension is loaded"""
+    bot.add_cog(ImgurAPI(bot))
 
 
 def teardown(bot):
-    # We should call _stop_watching() here, it seems like the task might
-    # not be killed when we reload the cog. Can we access methods of the cog
-    # from the bot object, given we call add_cog()?
-    pass
+    """Called by nextcord when an extension is unloaded"""
+    bot.cogs['ImgurAPI'].stop_watching()

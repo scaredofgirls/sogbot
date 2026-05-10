@@ -1,3 +1,4 @@
+"""A data storage module for shelving data"""
 import shelve
 import logging
 
@@ -13,17 +14,20 @@ default_config = {
 
 
 class Storage():
+    """An interface for storage"""
     def __init__(self, config=default_config):
         logger.debug("In shelve storage __init__")
-        logger.debug(f"Using path: {config['storage']['shelve']['db_path']}")
+        logger.debug("Using path: %s", config['storage']['shelve']['db_path'])
         self.path = config['storage']['shelve']['db_path']
         self.db = shelve.open(self.path, flag='c', writeback=False)
 
     def get_full_key(self, app, key):
+        """idk"""
         return f"{app}::{key}"
 
     def read(self, app, key):
-        logger.debug(f"Reading key '{key}' for app '{app}' from storage")
+        """Read from storage"""
+        logger.debug("Reading key '%s' for app '%s' from storage", key, app)
         fk = self.get_full_key(app, key)
         try:
             value = self.db[fk]
@@ -32,8 +36,9 @@ class Storage():
         return value
 
     def write(self, app, key, value):
-        logger.debug(f"Writing value '{value}' to key '{key}' for app '{app}' "
-                     "to storage")
+        """Write to storage"""
+        logger.debug("Writing value '%s' to key '%s' for app '%s'"
+                     "to storage", value, key, app)
         fk = self.get_full_key(app, key)
         try:
             self.db[fk] = value
@@ -43,7 +48,8 @@ class Storage():
         return True
 
     def delete(self, app, key):
-        logger.debug(f"Deleting key '{key}' for app '{app}' from storage")
+        """Delete a record from storage"""
+        logger.debug("Deleting key '%s' for app '%s' from storage", key, app)
         fk = self.get_full_key(app, key)
         try:
             del self.db[fk]
@@ -52,4 +58,5 @@ class Storage():
         return True
 
     def search(self, app, query):
+        """Search the data store"""
         return ""

@@ -1,20 +1,19 @@
-#!/usr/bin/env python3
+"""A nextcord module for generating random numbers"""
 
+import logging
+import random
 from nextcord.ext import commands
 from nextcord import SlashOption, Interaction
 import nextcord
-import logging
-import random
 
 logger = logging.getLogger('sogbot')
 
 
-class rand(commands.Cog):
+class Rand(commands.Cog):
+    """Generate a random number"""
     def __init__(self, bot):
         self.app = "rand"
         self.bot = bot
-        for gid in bot.config['bot']['guild_ids']:
-            self.rand.add_guild_rollout(gid)
 
     @nextcord.slash_command(name="rand", description="Generate random numbers")
     async def rand(self, interaction: Interaction,
@@ -24,6 +23,7 @@ class rand(commands.Cog):
                                               required=True),
                    count: int = SlashOption(description="Amount of numbers",
                                             required=True)):
+        """Generate a random number"""
         results = []
         while len(results) < count:
             this_int = random.randint(floor, ceiling)
@@ -37,8 +37,10 @@ class rand(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(rand(bot))
+    """Code to run at extension load time"""
+    bot.add_cog(Rand(bot))
 
 
 def teardown(bot):
-    pass
+    """Code to run at extension unload time"""
+    return

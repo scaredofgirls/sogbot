@@ -1,3 +1,4 @@
+"""sqlite based storage class"""
 import sqlite3
 
 SQL_CREATE_TABLE = """
@@ -29,12 +30,14 @@ default_config = {
 
 
 class Storage():
+    """sqlite based storage"""
     def __init__(self, config=default_config):
         self.path = config['path']
         self.con = sqlite3.connect(self.path)
         self.curs = self.con.cursor()
 
     def _table_exists(self, table):
+        """See if a table exists"""
         self.curs.execute(SQL_TABLE_EXISTS)
         rows = self.curs.fetchall()
         if len(rows) > 0:
@@ -42,15 +45,13 @@ class Storage():
         return False
 
     def _create_table(self, table):
-        "True on success, False on failure"
+        """True on success, False on failure"""
         query = SQL_CREATE_TABLE.format(table)
         self.curs.execute(query)
-        if self._table_exists(table):
-            return True
-        else:
-            return False
+        return self._table_exists(table)
 
     def read(self, app, key):
+        """Read from sqlite"""
         if not self._table_exists(app):
             self._create_table(app)
         query = SQL_VALUE_FROM_KEY.format(app, key)
@@ -61,7 +62,7 @@ class Storage():
         return None
 
     def write(self, app, key, value):
-        "True on success, false on failure"
+        """True on success, false on failure"""
         if not self._table_exists(app):
             self._create_table(app)
         query = SQL_VALUE_TO_KEY.format(app)
@@ -71,4 +72,5 @@ class Storage():
         return False
 
     def search(self):
-        pass
+        """Search sqlite"""
+        return

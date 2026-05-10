@@ -1,3 +1,5 @@
+"""A module for managing storage for a nextcord
+based bot"""
 import importlib
 import logging
 
@@ -11,7 +13,8 @@ logger = logging.getLogger('sogbot')
 # write("app", "key")
 
 
-def init_storage(backend="shelve", config={}):
+def init_storage(backend="shelve", config=None):
+    """Initialize storage for the bot"""
     try:
         be_module = importlib.import_module(f"storage.{backend}")
     except Exception as e:
