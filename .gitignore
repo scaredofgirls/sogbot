@@ -4,3 +4,4 @@ discord.log
 .bnet_auth
 .venv
 disc_bot.db
+.pylintrc
