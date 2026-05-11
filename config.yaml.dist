@@ -12,8 +12,6 @@ bot:
     mc.rcon: []
   owner_ids:
     - 999999999999999999
-  guild_ids:
-    - 999999999999999999
   default_guild_ids: 8888888888
 
 storage:
