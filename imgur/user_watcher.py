@@ -30,7 +30,9 @@ class ImgurAPI(commands.Cog):
             bot.config["imgur"]["api"]["base"],
             bot.config["imgur"]["api"]["subs"],
         )
-        botutil.do_guild_rollout(bot.config, __name__, self.imgur)
+        botutil.do_guild_rollout(
+            bot.config, __name__, self.imgur, [g.id for g in bot.guilds]
+        )
         self._load_users()  # Loads from storage into self.watched_users
         self._start_watching()
 

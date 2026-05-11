@@ -23,7 +23,9 @@ class Mcrcon(commands.Cog):
             "host": bot.config["mc"]["rcon"]["host"],
             "password": bot.config["mc"]["rcon"]["pass"],
         }
-        botutil.do_guild_rollout(bot.config, __name__, self.mc)
+        botutil.do_guild_rollout(
+            bot.config, __name__, self.mc, [g.id for g in bot.guilds]
+        )
 
     @nextcord.slash_command(name="mc", description=COG_DESC)
     async def mc(self, name="mc"):

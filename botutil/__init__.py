@@ -14,14 +14,17 @@ def get_config(file_name="config.yaml"):
     return y
 
 
-def do_guild_rollout(bot_config, extension_name, command):
+def do_guild_rollout(bot_config, extension_name, command, all_guilds=None):
     """A helper for setting up guild rollouts for commands
     Every extension should call this in __init__"""
-    if len(bot_config["bot"]["extensions"][extension_name]) == 0:
-        return True
-    for gid in bot_config["bot"]["extensions"][extension_name]:
+    load_all = len(bot_config["bot"]["extensions"][extension_name]) == 0
+    if load_all and all_guilds is not None:
+        guilds_to_join = all_guilds
+    else:
+        guilds_to_join = bot_config["bot"]["extensions"][extension_name]
+
+    for gid in guilds_to_join:
         command.add_guild_rollout(gid)
-    return True
 
 
 def set_bot_owner(bot):

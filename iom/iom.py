@@ -32,7 +32,9 @@ class Iom(commands.Cog):
             "host": bot.config["mud"]["host"],
             "cgi_uri": bot.config["mud"]["cgi_uri"],
         }
-        botutil.do_guild_rollout(bot.config, __name__, self.iom)
+        botutil.do_guild_rollout(
+            bot.config, __name__, self.iom, [g.id for g in bot.guilds]
+        )
 
     @nextcord.slash_command(name="iom", description=COG_DESC)
     async def iom(self, interaction: nextcord.Interaction):
