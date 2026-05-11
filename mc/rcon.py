@@ -10,7 +10,6 @@ import botutil
 
 logger = logging.getLogger('sogbot')
 COG_DESC = "Commands for interaction with a Minecraft RCON server"
-# this_mod_servers = [1121191247827185664, 285906403477159936]
 
 
 class Mcrcon(commands.Cog):

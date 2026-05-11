@@ -1,25 +1,21 @@
 """A data storage module for shelving data"""
-import shelve
+
 import logging
+import shelve
 
-logger = logging.getLogger('sogbot')
-
-default_config = {
-    "storage": {
-        "shelve": {
-            "db_path": "/tmp/disc_bot.db"
-        }
-    }
-}
+logger = logging.getLogger("sogbot")
 
 
-class Storage():
+class Storage:
     """An interface for storage"""
-    def __init__(self, config=default_config):
+
+    def __init__(self, config=None):
+        if config is None:
+            config = {"storage": {"shelve": {"db_path": "/tmp/disc_bot.db"}}}
         logger.debug("In shelve storage __init__")
-        logger.debug("Using path: %s", config['storage']['shelve']['db_path'])
-        self.path = config['storage']['shelve']['db_path']
-        self.db = shelve.open(self.path, flag='c', writeback=False)
+        logger.debug("Using path: %s", config["storage"]["shelve"]["db_path"])
+        self.path = config["storage"]["shelve"]["db_path"]
+        self.db = shelve.open(self.path, flag="c", writeback=False)
 
     def get_full_key(self, app, key):
         """idk"""
@@ -37,8 +33,12 @@ class Storage():
 
     def write(self, app, key, value):
         """Write to storage"""
-        logger.debug("Writing value '%s' to key '%s' for app '%s'"
-                     "to storage", value, key, app)
+        logger.debug(
+            "Writing value '%s' to key '%s' for app '%s' to storage",
+            value,
+            key,
+            app,
+        )
         fk = self.get_full_key(app, key)
         try:
             self.db[fk] = value
@@ -58,5 +58,5 @@ class Storage():
         return True
 
     def search(self, app, query):
-        """Search the data store"""
+        """Search the data store. Not yet implemented"""
         return ""

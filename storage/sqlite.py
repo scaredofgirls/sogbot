@@ -1,4 +1,5 @@
 """sqlite based storage class"""
+
 import sqlite3
 
 SQL_CREATE_TABLE = """
@@ -24,21 +25,19 @@ WHERE
 SQL_VALUE_TO_KEY = "REPLACE INTO {0} (st_key, st_value) VALUES (?, ?)"
 
 
-default_config = {
-    "path": "/tmp/sqlite.db"
-}
-
-
-class Storage():
+class Storage:
     """sqlite based storage"""
-    def __init__(self, config=default_config):
-        self.path = config['path']
+
+    def __init__(self, config=None):
+        if config is None:
+            config = {"path": "/tmp/sqlite.db"}
+        self.path = config["path"]
         self.con = sqlite3.connect(self.path)
         self.curs = self.con.cursor()
 
     def _table_exists(self, table):
         """See if a table exists"""
-        self.curs.execute(SQL_TABLE_EXISTS)
+        self.curs.execute(SQL_TABLE_EXISTS.format(table))
         rows = self.curs.fetchall()
         if len(rows) > 0:
             return True
