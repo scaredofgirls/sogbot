@@ -70,6 +70,7 @@ if __name__ == "__main__":
         await ctx.send("\N{SLICE OF PIZZA}")
 
     for extension in bconf["bot"]["extensions"].items():
+        bot_log.debug("Loading extension '%s'", extension)
         bot.load_extension(extension)
 
     bot.run(DISCORD_TOKEN)
