@@ -3,74 +3,80 @@ A nextcord extension for interacting with
 Islands of Myth MUD
 """
 
-import logging
 import datetime
-import re
 import json
-from bs4 import BeautifulSoup
-import requests
-from nextcord.ext import commands
-import nextcord
-import botutil
+import logging
+import re
 
-logger = logging.getLogger('sogbot')
+import botutil
+import nextcord
+import requests
+from bs4 import BeautifulSoup
+from nextcord.ext import commands
+
+logger = logging.getLogger("sogbot")
 COG_DESC = "Commands for interaction with a Islands of Myth"
 
-who_re = r'([A-Z][a-z]+) the ([A-Za-z_ -]+), is ranked +([A-Za-z_ -]+) at '
-who_re = who_re + r'level +([0-9]+)\.'
+who_re = r"([A-Z][a-z]+) the ([A-Za-z_ -]+), is ranked +([A-Za-z_ -]+) at "
+who_re = who_re + r"level +([0-9]+)\."
 WHO_RE_PAT = re.compile(who_re)
 
 
 class Iom(commands.Cog):
     """A cog of commands for interacting with IoM"""
+
     def __init__(self, bot):
         self.app = "iom"
         self.bot = bot
         self.mud = {
-            "host": bot.config['mud']['host'],
-            "cgi_uri": bot.config['mud']['cgi_uri']
+            "host": bot.config["mud"]["host"],
+            "cgi_uri": bot.config["mud"]["cgi_uri"],
         }
         botutil.do_guild_rollout(bot.config, __name__, self.iom)
 
-    @nextcord.slash_command(name="iom",
-                            description=COG_DESC)
-    async def iom(self):
+    @nextcord.slash_command(name="iom", description=COG_DESC)
+    async def iom(self, interaction: nextcord.Interaction):
         """A placeholder to get the base command created"""
         return
 
-    @iom.subcommand(name="who",
-                    description="See who is playing!")
+    @iom.subcommand(name="who", description="See who is playing!")
     async def who(self, interaction: nextcord.Interaction):
         """See who is playing"""
         resp = self._do_mud_command("who")
 
-        this_embed = nextcord.Embed(colour=0x145DA0,
-                                    description="Players Currently Online:",
-                                    title="IoM 'who'", type="rich",
-                                    timestamp=datetime.datetime.now())
+        this_embed = nextcord.Embed(
+            colour=0x145DA0,
+            description="Players Currently Online:",
+            title="IoM 'who'",
+            type="rich",
+            timestamp=datetime.datetime.now(),
+        )
         for player in resp:
             this_value = f"Level {player[3]} {player[1].title()}"
             this_value = f"{this_value} {player[2].title()}"
             this_embed.add_field(name=player[0].title(), value=this_value)
         await interaction.response.send_message(embed=this_embed)
 
-    @iom.subcommand(name="finger",
-                    description="Finger a player.")
+    @iom.subcommand(name="finger", description="Finger a player.")
     async def finger(self, interaction: nextcord.Interaction, player: str):
         """Finger a player"""
         resp = self._do_mud_command("finger", player)
         await interaction.response.send_message(resp)
 
-    @iom.subcommand(name="parties",
-                    description="Show the currently formed parties")
+    @iom.subcommand(
+        name="parties", description="Show the currently formed parties"
+    )
     async def parties(self, interaction: nextcord.Interaction):
         """List parties"""
         resp = self._do_mud_command("parties")
         resp = json.loads(resp)
-        this_embed = nextcord.Embed(colour=0x145DA0,
-                                    description="Parties Active:",
-                                    title="IoM 'all parties'", type="rich",
-                                    timestamp=datetime.datetime.now())
+        this_embed = nextcord.Embed(
+            colour=0x145DA0,
+            description="Parties Active:",
+            title="IoM 'all parties'",
+            type="rich",
+            timestamp=datetime.datetime.now(),
+        )
         for party in resp:
             # "{\"name\": \"%s\", \"leader\": \"%s\", \"rate\": %d,
             # \"rating\":\"%s\", \"type\": \"%s\"}"
@@ -110,9 +116,9 @@ class Iom(commands.Cog):
     def _get_who_cgi(self):
         users_on = []
         who_html = self._do_cgi_req("who.c")
-        soup = BeautifulSoup(who_html, 'html.parser')
+        soup = BeautifulSoup(who_html, "html.parser")
 
-        for user in soup.ol.find_all('li'):
+        for user in soup.ol.find_all("li"):
             this_line = user.get_text()
             who_match = WHO_RE_PAT.fullmatch(this_line)
             if who_match is None:
