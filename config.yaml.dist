@@ -4,7 +4,7 @@ bot:
   # Which extentions to load and which guilds should have access to them
   # module.name: [guild_ids]
   # An empty list means all guilds the bot logs into can use the command
-  extentions:
+  extensions:
     admin.admin: []
     iom.iom: []
     rand.rand: []
