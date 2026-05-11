@@ -58,6 +58,8 @@ if __name__ == "__main__":
         bot_log.warning("Bot owner not defined.")
         bot_log.warning("Falling back on default owner detection.")
 
+    bot.config = bconf
+
     @bot.event
     async def on_ready():
         """Routines to run once we're connected and ready to do bot things"""
