@@ -46,19 +46,9 @@ if __name__ == "__main__":
         default_guild_ids=bconf["bot"]["default_guild_ids"],
     )
     setattr(bot, "storage", st)
+    setattr(bot, "config", bconf)
 
-    try:
-        if len(bconf["bot"]["owner_ids"]) > 1:
-            bot.owner_ids = set(bconf["bot"]["owner_ids"])
-            bot_log.debug("Set owner_ids to %s", bot.owner_ids)
-        else:
-            bot.owner_id = bconf["bot"]["owner_ids"][0]
-            bot_log.debug("Set owner_id to %s", bot.owner_id)
-    except KeyError:
-        bot_log.warning("Bot owner not defined.")
-        bot_log.warning("Falling back on default owner detection.")
-
-    bot.config = bconf
+    botutil.set_bot_owner(bot)
 
     @bot.event
     async def on_ready():
