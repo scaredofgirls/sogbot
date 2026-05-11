@@ -64,7 +64,7 @@ if __name__ == '__main__':
         """Responds with a pizza emote. Sort of a 'ping' function"""
         await ctx.send('\N{SLICE OF PIZZA}')
 
-    for extension in bconf.extensions.items():
+    for extension in bconf.bot.extensions.items():
         bot.load_extension(extension)
 
     bot.run(DISCORD_TOKEN)
